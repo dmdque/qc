@@ -16,15 +16,31 @@ import java.util.Collections;
 public class Solution {
   public static boolean DEBUG = false;
 
-  //public static Distance[] sortFirstKDistances(Distance[] distances, k) {
-    //int n = distances.length;
-    //int pivot = Math.random() * n; // random pivot. use median of medians to improve
-    //for(int i = 0; i < n; i++) {
-      //if(distances[i].distance < distances[pivot].distance) {
-      //} else {
-      //}
-    //}
-  //}
+  public static void partitionFirstKDistances(Distance[] distances, int left, int right, int k) {
+    System.out.println("left: " + left + ", right: " + right + ", k: " + k);
+    System.out.println("distances[i]: ");
+    for(int i = 0; i < distances.length; i++) {
+      System.out.println(distances[i]);
+    }
+    if(left < right) {
+      int n = right - left;
+      int pivot = left + (int) (Math.random() * n); // random pivot. use median of medians to improve
+      System.out.println("pivot: " + pivot + " val: " + distances[pivot].distance);
+      int l = partitionDistances(distances, left, right - 1, k);
+      System.out.println("l: " + l);
+      if(l < k) {
+        // partition right of l
+        partitionFirstKDistances(distances, l + 1, right, k - l + 1);
+      } else if (l > k) {
+        // further partition left of l
+        partitionFirstKDistances(distances, left, l, k);
+      } else {
+        // done
+      }
+    } else {
+      System.out.println("error");
+    }
+  }
 
   public static void swapDistances(Distance[] a, int left, int right) {
     Distance temp = a[left];
@@ -32,18 +48,19 @@ public class Solution {
     a[right] = temp;
   }
 
-  public static void partitionDistances(Distance[] distances, int left, int right, int pivotIndex) {
+  public static int partitionDistances(Distance[] distances, int left, int right, int pivotIndex) {
     double pivotValue = distances[pivotIndex].distance;
     swapDistances(distances, right, pivotIndex);
     int storeIndex = left;
 
-    for(int i = left; i < right - 1; i++) {
+    for(int i = left; i < right; i++) {
       if(distances[i].distance < pivotValue) {
         swapDistances(distances, storeIndex, i);
         storeIndex++;
       }
     }
     swapDistances(distances, right, storeIndex);
+    return storeIndex - 1;
   }
   
   public static Topic stringToTopic(String line) {
@@ -83,11 +100,12 @@ public class Solution {
   public static void main(String[] args) {   
     Distance[] testDistances = new Distance[20];
     for(int i = 0; i < 20; i++) {
-      testDistances[i] = new Distance(i, Math.random() * 1000000);
+      testDistances[i] = new Distance(i, (int) (Math.random() * 100));
       System.out.println(testDistances[i]);
     }
    
-    partitionDistances(testDistances, 0, 19, 5);
+    partitionFirstKDistances(testDistances, 0, 20, 5);
+    //partitionDistances(testDistances, 0, 19, 5);
     System.out.println("PARTITIONED:");
     for(int i = 0; i < 20; i++) {
       System.out.println(testDistances[i]);
