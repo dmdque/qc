@@ -16,21 +16,37 @@ import java.util.Collections;
 public class Solution {
   public static boolean DEBUG = false;
 
+  public static void quickSortFirstKDistances(Distance[] distances, int left, int right) {
+    int n = right - left;
+    if(n  < 2) {
+      if(distances[left].distance > distances[left + 1].distance) {
+        swapDistances(distances, left, left + 1);
+      }
+    } else {
+      int pivot = left + (int) (Math.random() * n); // random pivot. use median of medians to improve
+      System.out.println("pivot: " + pivot + " val: " + distances[pivot].distance);
+      int l = partitionDistances(distances, left, right - 1, pivot);
+      System.out.println("l: " + l);
+      quickSortFirstKDistances(distances, left, l);
+      quickSortFirstKDistances(distances, l, right);
+    }
+  }
+
   public static void partitionFirstKDistances(Distance[] distances, int left, int right, int k) {
     System.out.println("left: " + left + ", right: " + right + ", k: " + k);
     System.out.println("distances[i]: ");
     for(int i = 0; i < distances.length; i++) {
-      System.out.println(distances[i]);
+      System.out.println(i + ": " + distances[i]);
     }
-    if(left < right) {
+    if(left < right) { // check in case something went wrong
       int n = right - left;
       int pivot = left + (int) (Math.random() * n); // random pivot. use median of medians to improve
       System.out.println("pivot: " + pivot + " val: " + distances[pivot].distance);
-      int l = partitionDistances(distances, left, right - 1, k);
+      int l = partitionDistances(distances, left, right - 1, pivot);
       System.out.println("l: " + l);
       if(l < k) {
         // partition right of l
-        partitionFirstKDistances(distances, l + 1, right, k - l + 1);
+        partitionFirstKDistances(distances, l, right, k);
       } else if (l > k) {
         // further partition left of l
         partitionFirstKDistances(distances, left, l, k);
@@ -48,19 +64,33 @@ public class Solution {
     a[right] = temp;
   }
 
+  public static boolean approxEqual(double d1, double d2) {
+    if(Math.abs(d1 - d2) <= 0.001) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   public static int partitionDistances(Distance[] distances, int left, int right, int pivotIndex) {
     double pivotValue = distances[pivotIndex].distance;
     swapDistances(distances, right, pivotIndex);
     int storeIndex = left;
 
     for(int i = left; i < right; i++) {
-      if(distances[i].distance < pivotValue) {
+      if(approxEqual(distances[i].distance, pivotValue)) {
+        //System.out.println("approx equal" + distances[i].id + "pivot " + distances[right].id);
+        //if(distances[i].id > distances[right].id) {
+        swapDistances(distances, storeIndex, i);
+        storeIndex++;
+        //}
+      } else if(distances[i].distance < pivotValue) {
         swapDistances(distances, storeIndex, i);
         storeIndex++;
       }
     }
     swapDistances(distances, right, storeIndex);
-    return storeIndex - 1;
+    return storeIndex;
   }
   
   public static Topic stringToTopic(String line) {
@@ -98,17 +128,41 @@ public class Solution {
   }
 
   public static void main(String[] args) {   
-    Distance[] testDistances = new Distance[20];
-    for(int i = 0; i < 20; i++) {
-      testDistances[i] = new Distance(i, (int) (Math.random() * 100));
+    int numDistances = 1000;
+    Distance[] testDistances = new Distance[numDistances];
+    //testDistances[0] = new Distance(0, 7.0);
+    //testDistances[1] = new Distance(1, 1.0);
+    //testDistances[2] = new Distance(2, 9.0);
+    //testDistances[3] = new Distance(3, 6.0);
+    //testDistances[4] = new Distance(4, 4.0);
+    //testDistances[5] = new Distance(5, 0.0);
+    //testDistances[6] = new Distance(6, 0.0);
+    //testDistances[7] = new Distance(7, 9.0);
+    //testDistances[8] = new Distance(8, 9.0);
+    //testDistances[9] = new Distance(9, 3.0);
+    //testDistances[10] = new Distance(10, 6.0);
+    //testDistances[11] = new Distance(11, 5.0);
+    //testDistances[12] = new Distance(12, 5.0);
+    //testDistances[13] = new Distance(13, 5.0);
+    //testDistances[14] = new Distance(14, 9.0);
+    //testDistances[15] = new Distance(15, 6.0);
+    //testDistances[16] = new Distance(16, 0.0);
+    //testDistances[17] = new Distance(17, 6.0);
+    //testDistances[18] = new Distance(18, 2.0);
+    //testDistances[19] = new Distance(19, 9.0);
+    for(int i = 0; i < numDistances; i++) {
+      testDistances[i] = new Distance(i, (int) (Math.random() * 1000));
+    }
+    for(int i = 0; i < numDistances; i++) {
       System.out.println(testDistances[i]);
     }
-   
-    partitionFirstKDistances(testDistances, 0, 20, 5);
+
+    partitionFirstKDistances(testDistances, 0, numDistances, 100);
+    quickSortFirstKDistances(testDistances, 0, 100);
     //partitionDistances(testDistances, 0, 19, 5);
     System.out.println("PARTITIONED:");
-    for(int i = 0; i < 20; i++) {
-      System.out.println(testDistances[i]);
+    for(int i = 0; i < numDistances; i++) {
+      System.out.println(i + ": " + testDistances[i]);
     }
 
     // Input and conversion into objects
